@@ -2,6 +2,8 @@ import streamlit as st
 import altair as alt
 import pandas as pd
 from numpy.random import default_rng as rng
+from vega_datasets import data
+import json, urllib.request
 
 st.title("Week 10 Assignment - Animation")
 
@@ -30,6 +32,32 @@ st.header("This weeks assignment is take any of your previous submissions and ad
 # event = st.altair_chart(chart, key="alt_chart", on_select="rerun")
 
 # event
+
+json_url = data.earthquakes.url
+with urllib.request.urlopen(json_url) as f:
+    raw = json.load(f)
+    
+df = pd.json_normalize(raw['features'])
+long_ = []
+lat_ = []
+for i in df['geometry.coordinates']:
+    long_.append(i[0])
+    lat_.append(i[1])
+df['Lat'] = lat_
+df["Long"] = long_
+df["date_str"] = pd.to_datetime(df["properties.time"])
+
+
+MAX_STEP = int(len(df)+1)
+
+# Session state
+# -------------------------
+if "step" not in st.session_state:
+    st.session_state.step = 1
+if "playing" not in st.session_state:
+    st.session_state.playing = False
+if "loop" not in st.session_state:
+    st.session_state.loop = True
 
 with st.sidebar:
     st.markdown("### Animation Controls")
