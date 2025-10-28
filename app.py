@@ -76,7 +76,14 @@ with st.sidebar:
         st.session_state.step = 1
         st.session_state.playing = False
 
-    speed = st.slider("Speed (points per second)", 0.25, 5.0, 1.0, 0.25)
+    speed = st.slider("Speed (points per second)", options=[
+        10,
+        20,
+        40,
+        80,
+        100
+    ],
+)
     st.session_state.loop = st.toggle("Loop when finished", value=True)
 
 st.write("Currently Playing:", st.session_state.playing)
