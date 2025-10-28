@@ -91,7 +91,7 @@ points = (
         longitude="Long:Q",
         latitude="Lat:Q",
         color=alt.Color(
-            "properties.mag:Q",
+            "properties.mag:O",
             scale=alt.Scale(scheme="inferno", domain=[df["properties.mag"].min(), df["properties.mag"].max()]),
             legend=alt.Legend(title="Magnitude")),
         tooltip=["properties.mag:Q", "step:Q", "properties.type:N", "date_str:T"],
