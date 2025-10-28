@@ -37,8 +37,8 @@ df["step"] = np.arange(1, MAX_STEP + 1)
 # -------------------------
 # Session state
 # -------------------------
-# if "step" not in st.session_state:
-#     st.session_state.step = 1           # current reveal boundary (1..MAX_STEP)
+if "step" not in st.session_state:
+    st.session_state.step = 1           # current reveal boundary (1..MAX_STEP)
 if "playing" not in st.session_state:
     st.session_state.playing = False
 if "loop" not in st.session_state:
