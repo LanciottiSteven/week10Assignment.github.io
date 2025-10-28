@@ -64,6 +64,8 @@ with st.sidebar:
     # Loop when we reach the end?
     st.session_state.loop = st.toggle("Loop when finished", value=True)
 
+st.write("***Press play when ready***")
+
 # st.write("Currently Playing:", st.session_state.playing)
 # st.write("Current Batch Size:", batch_size)
 # st.write("Min Mag:", df["properties.mag"].min())
@@ -125,7 +127,7 @@ points = (
 )
 
 
-chart = (base + points).properties(title="Adding Points Over Time (Play/Pause/Reset)")
+chart = (base + points).properties(title="Earthquakes Over Time")
 st.altair_chart(chart, use_container_width=True)
 
 # -------------------------
