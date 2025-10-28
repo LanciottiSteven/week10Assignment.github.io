@@ -54,14 +54,7 @@ MAX_STEP = int(len(df)+1)
 df['step'] = np.arange(1,MAX_STEP)
 
 
-# Session state
-# -------------------------
-# if "step" not in st.session_state:
-#     st.session_state.step = 1
-# if "playing" not in st.session_state:
-#     st.session_state.playing = False
-# if "loop" not in st.session_state:
-#     st.session_state.loop = True
+
 
 st.markdown()
 
