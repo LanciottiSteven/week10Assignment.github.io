@@ -87,9 +87,39 @@ points = (
     .encode(
         longitude="Long:Q",
         latitude="Lat:Q",
+        color=alt.Color(
+            "properties.mag:Q",
+            scale=alt.Scale(scheme="inferno", domain=[df["properties.mag"].min(), df["properties.mag"].max()]),
+            legend=alt.Legend(title="Magnitude")),
         tooltip=["properties.mag:Q", "step:Q", "properties.type:N", "date_str:T"],
     )
 )
+
+# points = (
+#     alt.Chart(visible)
+#     .mark_circle()
+#     .encode(
+#         longitude="Long:Q",
+#         latitude="Lat:Q",
+#         color=alt.Color(
+#             "properties.mag:Q",
+#             scale=alt.Scale(scheme="inferno", domain=[df["properties.mag"].min(), df["properties.mag"].max()]),
+#             legend=alt.Legend(title="Magnitude")
+#         ),
+#         size=alt.Size(
+#             "properties.mag:Q",
+#             scale=alt.Scale(range=[10, 400]),  # bigger points for larger magnitude
+#             legend=None
+#         ),
+#         tooltip=[
+#             "properties.place:N",
+#             "properties.mag:Q",
+#             "date_str:T",
+#             "properties.type:N"
+#         ],
+#     )
+# )
+
 
 chart = (base + points).properties(title="Adding Points Over Time (Play/Pause/Reset)")
 st.altair_chart(chart, use_container_width=True)
