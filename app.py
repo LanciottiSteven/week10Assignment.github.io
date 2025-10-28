@@ -2,6 +2,7 @@ import streamlit as st
 import altair as alt
 import pandas as pd
 from numpy.random import default_rng as rng
+import numpy as np
 from vega_datasets import data
 import json, urllib.request
 
@@ -49,6 +50,8 @@ df["date_str"] = pd.to_datetime(df["properties.time"])
 
 
 MAX_STEP = int(len(df)+1)
+df['step'] = np.arange(1,MAX_STEP)
+
 
 # Session state
 # -------------------------
@@ -72,3 +75,18 @@ with st.sidebar:
 
     speed = st.slider("Speed (points per second)", 0.25, 5.0, 1.0, 0.25)
     st.session_state.loop = st.toggle("Loop when finished", value=True)
+
+countries = alt.topo_feature(data.world_110m.url, 'countries')
+base = alt.Chart(countries).mark_geoshape(
+    fill="lightgray",
+    stroke="white"
+).project(
+    type="naturalEarth1"
+).properties(
+    width=900,
+    height=480
+)
+    
+event = st.altair_chart(base)
+
+event
