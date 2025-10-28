@@ -81,7 +81,7 @@ base = (
     alt.Chart(countries)
     .mark_geoshape(fill="lightgray", stroke="white")
     .project(type="naturalEarth1")
-    .properties(width=900, height=480)
+    .properties(width=1000, height=500)
 )
 
 # Reveal only up to the current step
@@ -141,11 +141,10 @@ def advance_steps(batch: int):
         else:
             st.session_state.playing = False
 
-if st.session_state.playing:
-    time.sleep(0.5)  # adjust tick speed
-    advance_steps(batch_size)
-    # Use modern API; fall back if running on older Streamlit
-    try:
-        st.rerun()
-    except AttributeError:
-        st.experimental_rerun()
+# if st.session_state.playing:
+#     time.sleep(0.5)  # adjust tick speed
+#     advance_steps(batch_size)
+#     try:
+#         st.rerun()
+#     except AttributeError:
+#         st.experimental_rerun()
