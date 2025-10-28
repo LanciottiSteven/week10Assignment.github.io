@@ -80,7 +80,7 @@ with st.sidebar:
     st.session_state.loop = st.toggle("Loop when finished", value=True)
 
 st.write("Currently Playing:", st.session_state.playing)
-st.write("Current Speed:", st.session_state.loop)
+st.write("Current Speed:", speed)
 
 
 countries = alt.topo_feature(data.world_110m.url, 'countries')
