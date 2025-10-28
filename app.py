@@ -141,10 +141,10 @@ def advance_steps(batch: int):
         else:
             st.session_state.playing = False
 
-# if st.session_state.playing:
-#     time.sleep(0.5)  # adjust tick speed
-#     advance_steps(batch_size)
-#     try:
-#         st.rerun()
-#     except AttributeError:
-#         st.experimental_rerun()
+if st.session_state.playing:
+    time.sleep(0.5)  # adjust tick speed
+    advance_steps(batch_size)
+    try:
+        st.rerun()
+    except AttributeError:
+        st.experimental_rerun()
