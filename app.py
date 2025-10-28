@@ -5,6 +5,7 @@ from numpy.random import default_rng as rng
 import numpy as np
 from vega_datasets import data
 import json, urllib.request
+import time
 
 st.title("Week 10 Assignment - Animation")
 
@@ -101,3 +102,21 @@ chart = (base + points).properties(
 
 st.altair_chart(chart, use_container_width=True)
 
+# Animation loop (runs one tick, then re-runs the script)
+# -------------------------
+def advance_one_step():
+    if st.session_state.step < MAX_STEP:
+        st.session_state.step += 1
+    else:
+        if st.session_state.loop:
+            st.session_state.step = 1
+        else:
+            st.session_state.playing = False
+
+# If playing, wait according to speed, then move one step and rerun
+if st.session_state.playing:
+    # convert points per second -> seconds per frame
+    delay = 1.0 / float(speed)
+    time.sleep(delay)
+    advance_one_step()
+    st.experimental_rerun()
