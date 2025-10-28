@@ -95,7 +95,7 @@ points = alt.Chart(visible).mark_circle(size=160).encode(
     tooltip=["properties.mag:Q", "step:Q", "properties.type:N"]
 )
 
-chart = (base + points + labels).properties(
+chart = (base + points).properties(
     title="Adding Points Over Time (Play/Pause/Reset)"
 )
 
