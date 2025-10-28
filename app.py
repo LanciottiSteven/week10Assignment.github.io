@@ -83,29 +83,13 @@ visible = df[df["step"] <= st.session_state.step]
 
 points = (
     alt.Chart(visible)
-    .mark_circle()
+    .mark_circle(size=160)
     .encode(
         longitude="Long:Q",
         latitude="Lat:Q",
-        color=alt.Color(
-            "properties.mag:Q",
-            scale=alt.Scale(scheme="inferno", domain=[df["properties.mag"].min(), df["properties.mag"].max()]),
-            legend=alt.Legend(title="Magnitude")
-        ),
-        size=alt.Size(
-            "properties.mag:Q",
-            scale=alt.Scale(range=[10, 400]), 
-            legend=None
-        ),
-        tooltip=[
-            "properties.place:N",
-            "properties.mag:Q",
-            "date_str:T",
-            "properties.type:N"
-        ],
+        tooltip=["properties.mag:Q", "step:Q", "properties.type:N", "date_str:T"],
     )
 )
-
 
 chart = (base + points).properties(title="Adding Points Over Time (Play/Pause/Reset)")
 st.altair_chart(chart, use_container_width=True)
