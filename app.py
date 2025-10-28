@@ -81,11 +81,12 @@ base = (
     .project(type="naturalEarth1")
     .properties(width=900, height=480)
 )
-
+st.altair_chart(base, use_container_width=True)
 n = 36
 start_ = 0
 end_ = 50
 track_ = 0
+df_concat = pd.DataFrame()
 while track_< n and st.session_state.playing==True:
     df_concat = pd.concat([df_concat, df[start_:end_]])
     points = (
