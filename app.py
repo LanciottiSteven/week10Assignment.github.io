@@ -37,32 +37,32 @@ df["step"] = np.arange(1, MAX_STEP + 1)
 # -------------------------
 # Session state
 # -------------------------
-if "step" not in st.session_state:
-    st.session_state.step = 1           # current reveal boundary (1..MAX_STEP)
+# if "step" not in st.session_state:
+#     st.session_state.step = 1           # current reveal boundary (1..MAX_STEP)
 if "playing" not in st.session_state:
     st.session_state.playing = False
-if "loop" not in st.session_state:
-    st.session_state.loop = True
+# if "loop" not in st.session_state:
+#     st.session_state.loop = True
 
 # -------------------------
 # Controls
 # -------------------------
 with st.sidebar:
     st.markdown("### Animation Controls")
-    colA, colB, colC = st.columns([1, 1, 1])
+    colA, colB = st.columns([1, 1])
     if colA.button("▶ Play"):
         st.session_state.playing = True
-    if colB.button("⏸ Pause"):
-        st.session_state.playing = False
-    if colC.button("⟲ Reset"):
+    # if colB.button("⏸ Pause"):
+    #     st.session_state.playing = False
+    if colB.button("⟲ Reset"):
         st.session_state.step = 1
         st.session_state.playing = False
 
     # This slider sets how many points get added per tick
-    batch_size = st.slider("Points per tick", 10, 100, 20, 10)
+    # batch_size = st.slider("Points per tick", 10, 100, 20, 10)
 
     # Loop when we reach the end?
-    st.session_state.loop = st.toggle("Loop when finished", value=True)
+    # st.session_state.loop = st.toggle("Loop when finished", value=True)
 
 st.write("Currently Playing:", st.session_state.playing)
 st.write("Current Batch Size:", batch_size)
