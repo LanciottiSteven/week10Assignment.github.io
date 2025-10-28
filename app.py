@@ -47,16 +47,16 @@ if "loop" not in st.session_state:
 # -------------------------
 # Controls
 # -------------------------
-# with st.sidebar:
-st.markdown("### Animation Controls")
-colA, colB, colC = st.columns([1, 1, 1])
-if colA.button("▶ Play"):
-    st.session_state.playing = True
-if colB.button("⏸ Pause"):
-    st.session_state.playing = False
-if colC.button("⟲ Reset"):
-    st.session_state.step = 1
-    st.session_state.playing = False
+with st.sidebar:
+    st.markdown("### Animation Controls")
+    colA, colB, colC = st.columns([1, 1, 1])
+    if colA.button("▶ Play"):
+        st.session_state.playing = True
+    if colB.button("⏸ Pause"):
+        st.session_state.playing = False
+    if colC.button("⟲ Reset"):
+        st.session_state.step = 1
+        st.session_state.playing = False
 
     # This slider sets how many points get added per tick
     batch_size = st.slider("Points per tick", 10, 100, 100, 10)
@@ -144,6 +144,7 @@ def advance_steps(batch: int):
 if st.session_state.playing:
     time.sleep(0.5)  # adjust tick speed
     advance_steps(batch_size)
+    # Use modern API; fall back if running on older Streamlit
     try:
         st.rerun()
     except AttributeError:
