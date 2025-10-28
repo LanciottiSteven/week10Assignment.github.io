@@ -59,7 +59,7 @@ with st.sidebar:
         st.session_state.playing = False
 
     # This slider sets how many points get added per tick
-    batch_size = st.slider("Points per tick", 10, 100, 20, 10)
+    batch_size = st.slider("Points per tick", 10, 100, 20, 100)
 
     # Loop when we reach the end?
     st.session_state.loop = st.toggle("Loop when finished", value=True)
