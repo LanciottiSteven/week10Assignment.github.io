@@ -86,7 +86,7 @@ visible = df[df["step"] <= st.session_state.step]
 
 points = (
     alt.Chart(visible)
-    .mark_circle(size=160)
+    .mark_circle(size=1000)
     .encode(
         longitude="Long:Q",
         latitude="Lat:Q",
