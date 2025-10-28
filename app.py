@@ -65,7 +65,7 @@ with st.sidebar:
     # st.session_state.loop = st.toggle("Loop when finished", value=True)
 
 st.write("Currently Playing:", st.session_state.playing)
-st.write("Current Batch Size:", batch_size)
+# st.write("Current Batch Size:", batch_size)
 st.write("Min Mag:", df["properties.mag"].min())
 st.write("Max Mag:", df["properties.mag"].max())
 
@@ -82,25 +82,14 @@ base = (
     .properties(width=900, height=480)
 )
 
-# Reveal only up to the current step
-visible = df[df["step"] <= st.session_state.step]
-
-# points = (
-#     alt.Chart(visible)
-#     .mark_circle(size=1000)
-#     .encode(
-#         longitude="Long:Q",
-#         latitude="Lat:Q",
-#         color=alt.Color(
-#             "properties.mag:O",
-#             scale=alt.Scale(scheme="inferno", domain=[df["properties.mag"].min(), df["properties.mag"].max()]),
-#             legend=alt.Legend(title="Magnitude")),
-#         tooltip=["properties.mag:Q", "step:Q", "properties.type:N", "date_str:T"],
-#     )
-# )
-
-points = (
-    alt.Chart(visible)
+n = 36
+start_ = 0
+end_ = 50
+track_ = 0
+while track_< n and st.session_state.playing==True:
+    df_concat = pd.concat([df_concat, df[start_:end_]])
+    points = (
+    alt.Chart(df_concat)
     .mark_circle()
     .encode(
         longitude="Long:Q",
@@ -120,30 +109,52 @@ points = (
             "magnitude:Q",
             "date_str:T",
             "properties.type:N"
-        ],
+            ],
+        )
     )
-)
+    chart = (base + points).properties(title="Adding Points Over Time (Play/Pause/Reset)")
+    st.altair_chart(chart, use_container_width=True)
+    track_ += 1
+    start_ += 50
+    end_ += 50
+# Reveal only up to the current step
+# visible = df[df["step"] <= st.session_state.step]
+
+# points = (
+#     alt.Chart(visible)
+#     .mark_circle(size=1000)
+#     .encode(
+#         longitude="Long:Q",
+#         latitude="Lat:Q",
+#         color=alt.Color(
+#             "properties.mag:O",
+#             scale=alt.Scale(scheme="inferno", domain=[df["properties.mag"].min(), df["properties.mag"].max()]),
+#             legend=alt.Legend(title="Magnitude")),
+#         tooltip=["properties.mag:Q", "step:Q", "properties.type:N", "date_str:T"],
+#     )
+# )
 
 
-chart = (base + points).properties(title="Adding Points Over Time (Play/Pause/Reset)")
-st.altair_chart(chart, use_container_width=True)
+
+
+
 
 # -------------------------
 # Animation loop: add `batch_size` points each tick while playing
 # -------------------------
-def advance_steps(batch: int):
-    st.session_state.step = min(st.session_state.step + int(batch), MAX_STEP)
-    if st.session_state.step >= MAX_STEP:
-        if st.session_state.loop:
-            st.session_state.step = 1
-        else:
-            st.session_state.playing = False
+# def advance_steps(batch: int):
+#     st.session_state.step = min(st.session_state.step + int(batch), MAX_STEP)
+#     if st.session_state.step >= MAX_STEP:
+#         if st.session_state.loop:
+#             st.session_state.step = 1
+#         else:
+#             st.session_state.playing = False
 
-if st.session_state.playing:
-    time.sleep(0.5)  # adjust tick speed
-    advance_steps(batch_size)
-    # Use modern API; fall back if running on older Streamlit
-    try:
-        st.rerun()
-    except AttributeError:
-        st.experimental_rerun()
+# if st.session_state.playing:
+#     time.sleep(0.5)  # adjust tick speed
+#     advance_steps(batch_size)
+#     # Use modern API; fall back if running on older Streamlit
+#     try:
+#         st.rerun()
+#     except AttributeError:
+#         st.experimental_rerun()
