@@ -98,17 +98,18 @@ st.altair_chart(chart, use_container_width=True)
 # Animation loop: add `batch_size` points each tick while playing
 # -------------------------
 def advance_steps(batch: int):
-    # Increase the reveal window by 'batch' rows
     st.session_state.step = min(st.session_state.step + int(batch), MAX_STEP)
-    # Handle end-of-data behavior
     if st.session_state.step >= MAX_STEP:
         if st.session_state.loop:
             st.session_state.step = 1
         else:
             st.session_state.playing = False
 
-# If playing, wait a short delay, advance by batch, rerun
 if st.session_state.playing:
-    time.sleep(0.5)  # tick interval (adjust if you want faster/slower pacing)
+    time.sleep(0.5)  # adjust tick speed
     advance_steps(batch_size)
-    st.experimental_rerun()
+    # Use modern API; fall back if running on older Streamlit
+    try:
+        st.rerun()
+    except AttributeError:
+        st.experimental_rerun()
