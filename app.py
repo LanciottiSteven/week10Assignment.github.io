@@ -87,3 +87,4 @@ base = alt.Chart(countries).mark_geoshape(
     height=480
 )
 
+st.altair_chart(base)
