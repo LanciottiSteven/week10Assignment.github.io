@@ -8,66 +8,47 @@ import json, urllib.request
 import time
 
 st.title("Week 10 Assignment - Animation")
+st.header(
+    "This weeks assignment is take any of your previous submissions and add an animation that is focused on a specific insight.",
+    divider="gray"
+)
 
-st.header("This weeks assignment is take any of your previous submissions and add an animation that is focused on a specific insight.", divider="gray")
-
-
-
-# df = pd.DataFrame(rng(0).standard_normal((20, 3)), columns=["a", "b", "c"])
-
-# point_selector = alt.selection_point("point_selection")
-# interval_selector = alt.selection_interval("interval_selection")
-# chart = (
-#     alt.Chart(df)
-#     .mark_circle()
-#     .encode(
-#         x="a",
-#         y="b",
-#         size="c",
-#         color="c",
-#         tooltip=["a", "b", "c"],
-#         fillOpacity=alt.condition(point_selector, alt.value(1), alt.value(0.3)),
-#     )
-#     .add_params(point_selector, interval_selector)
-# )
-
-# event = st.altair_chart(chart, key="alt_chart", on_select="rerun")
-
-# event
-
+# ---- Load earthquakes (vega_datasets) and normalize ----
 json_url = data.earthquakes.url
 with urllib.request.urlopen(json_url) as f:
     raw = json.load(f)
-    
-df = pd.json_normalize(raw['features'])
-long_ = []
-lat_ = []
-for i in df['geometry.coordinates']:
-    long_.append(i[0])
-    lat_.append(i[1])
-df['Lat'] = lat_
+
+df = pd.json_normalize(raw["features"])
+# Extract lon/lat from geometry
+long_, lat_ = [], []
+for coords in df["geometry.coordinates"]:
+    long_.append(coords[0])
+    lat_.append(coords[1])
+df["Lat"] = lat_
 df["Long"] = long_
-df["date_str"] = pd.to_datetime(df["properties.time"])
+# properties.time is ms since epoch → parse correctly
+df["date_str"] = pd.to_datetime(df["properties.time"], unit="ms")
 
+# Build a reveal step for each row
+MAX_STEP = len(df)  # total rows
+df["step"] = np.arange(1, MAX_STEP + 1)
 
-MAX_STEP = int(len(df)+1)
-df['step'] = np.arange(1,MAX_STEP)
-
+# -------------------------
 # Session state
 # -------------------------
 if "step" not in st.session_state:
-    st.session_state.step = 1
+    st.session_state.step = 1           # current reveal boundary (1..MAX_STEP)
 if "playing" not in st.session_state:
     st.session_state.playing = False
 if "loop" not in st.session_state:
     st.session_state.loop = True
 
-
-
-
+# -------------------------
+# Controls
+# -------------------------
 with st.sidebar:
     st.markdown("### Animation Controls")
-    colA, colB, colC = st.columns([1,1,1])
+    colA, colB, colC = st.columns([1, 1, 1])
     if colA.button("▶ Play"):
         st.session_state.playing = True
     if colB.button("⏸ Pause"):
@@ -76,53 +57,58 @@ with st.sidebar:
         st.session_state.step = 1
         st.session_state.playing = False
 
-    speed = st.slider("Speed (points per second)", 10, 200, 100, 10)
+    # This slider sets how many points get added per tick
+    batch_size = st.slider("Points per tick", 10, 200, 100, 10)
+
+    # Loop when we reach the end?
     st.session_state.loop = st.toggle("Loop when finished", value=True)
 
 st.write("Currently Playing:", st.session_state.playing)
-st.write("Current Speed:", speed)
+st.write("Current Batch Size:", batch_size)
 
+# -------------------------
+# Map layers
+# -------------------------
+countries = alt.topo_feature(data.world_110m.url, "countries")
 
-countries = alt.topo_feature(data.world_110m.url, 'countries')
-base = alt.Chart(countries).mark_geoshape(
-    fill="lightgray",
-    stroke="white"
-).project(
-    type="naturalEarth1"
-).properties(
-    width=900,
-    height=480
-).interactive()
+base = (
+    alt.Chart(countries)
+    .mark_geoshape(fill="lightgray", stroke="white")
+    .project(type="naturalEarth1")
+    .properties(width=900, height=480)
+)
 
+# Reveal only up to the current step
 visible = df[df["step"] <= st.session_state.step]
 
-points = alt.Chart(visible).mark_circle(size=160).encode(
-    longitude="Long:Q",
-    latitude="Lat:Q",
-    tooltip=["properties.mag:Q", "step:Q", "properties.type:N"]
+points = (
+    alt.Chart(visible)
+    .mark_circle(size=160)
+    .encode(
+        longitude="Long:Q",
+        latitude="Lat:Q",
+        tooltip=["properties.mag:Q", "step:Q", "properties.type:N", "date_str:T"],
+    )
 )
 
-chart = (base + points).properties(
-    title="Adding Points Over Time (Play/Pause/Reset)"
-)
-
+chart = (base + points).properties(title="Adding Points Over Time (Play/Pause/Reset)")
 st.altair_chart(chart, use_container_width=True)
 
-# Animation loop (runs one tick, then re-runs the script)
 # -------------------------
-# def advance_one_step():
-#     if st.session_state.step < MAX_STEP:
-#         st.session_state.step += 1
-#     else:
-#         if st.session_state.loop:
-#             st.session_state.step = 1
-#         else:
-#             st.session_state.playing = False
+# Animation loop: add `batch_size` points each tick while playing
+# -------------------------
+def advance_steps(batch: int):
+    # Increase the reveal window by 'batch' rows
+    st.session_state.step = min(st.session_state.step + int(batch), MAX_STEP)
+    # Handle end-of-data behavior
+    if st.session_state.step >= MAX_STEP:
+        if st.session_state.loop:
+            st.session_state.step = 1
+        else:
+            st.session_state.playing = False
 
-# # If playing, wait according to speed, then move one step and rerun
-# if st.session_state.playing:
-#     # convert points per second -> seconds per frame
-#     delay = 1.0 / float(speed)
-#     time.sleep(delay)
-#     advance_one_step()
-#     st.experimental_rerun()
+# If playing, wait a short delay, advance by batch, rerun
+if st.session_state.playing:
+    time.sleep(0.5)  # tick interval (adjust if you want faster/slower pacing)
+    advance_steps(batch_size)
+    st.experimental_rerun()
