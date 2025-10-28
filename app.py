@@ -118,7 +118,14 @@ while track_< n and st.session_state.playing==True:
     # start_ += 50
     end_ += 50
     chart = (base + points).properties(title="Adding Points Over Time (Play/Pause/Reset)")
-    st.altair_chart(chart, use_container_width=True)
+    # st.altair_chart(chart, use_container_width=True)
+    if st.session_state.playing:
+        time.sleep(0.5)  # adjust tick speed
+        # Use modern API; fall back if running on older Streamlit
+        try:
+            st.rerun()
+        except AttributeError:
+            st.experimental_rerun()
     
 # Reveal only up to the current step
 # visible = df[df["step"] <= st.session_state.step]
