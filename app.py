@@ -66,7 +66,7 @@ with st.sidebar:
 st.write("Currently Playing:", st.session_state.playing)
 st.write("Current Batch Size:", batch_size)
 st.write("Min Mag:", df["properties.mag"].min())
-st.write("Max Mag:", df["properties.mag"].min())
+st.write("Max Mag:", df["properties.mag"].max())
 
 
 # -------------------------
