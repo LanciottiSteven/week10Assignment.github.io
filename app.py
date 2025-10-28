@@ -62,7 +62,7 @@ with st.sidebar:
     batch_size = st.slider("Points per tick", 10, 100, 100, 10)
 
     # Loop when we reach the end?
-    st.session_state.loop = st.toggle("Loop when finished", value=True)
+    st.session_state.loop = st.toggle("Loop when finished", value=False)
 
 st.write("***Press play when ready***")
 
@@ -114,7 +114,7 @@ points = (
         ),
         size=alt.Size(
             "magnitude:Q",
-            scale=alt.Scale(range=[10, 400]),  # bigger points for larger magnitude
+            scale=alt.Scale(range=[10, 200]),  # bigger points for larger magnitude
             legend=None
         ),
         tooltip=[
