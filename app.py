@@ -63,7 +63,7 @@ df['step'] = np.arange(1,MAX_STEP)
 #     st.session_state.loop = True
 
 
-st.markdown()
+
 
 with st.sidebar:
     st.markdown("### Animation Controls")
