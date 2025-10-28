@@ -1,7 +1,6 @@
 import streamlit as st
 import altair as alt
 import pandas as pd
-from numpy.random import default_rng as rng
 import numpy as np
 from vega_datasets import data
 import json, urllib.request
@@ -19,178 +18,114 @@ with urllib.request.urlopen(json_url) as f:
     raw = json.load(f)
 
 df = pd.json_normalize(raw["features"])
-# Extract lon/lat from geometry
-long_, lat_ = [], []
-for coords in df["geometry.coordinates"]:
-    long_.append(coords[0])
-    lat_.append(coords[1])
-df["Lat"] = lat_
-df["Long"] = long_
-# properties.time is ms since epoch → parse correctly
-df["date_str"] = pd.to_datetime(df["properties.time"], unit="ms")
-df['magnitude'] = df['properties.mag'].astype(float)
 
-# Build a reveal step for each row
-MAX_STEP = len(df)  # total rows
-df["step"] = np.arange(1, MAX_STEP + 1)
+# Extract lon/lat from geometry
+df["Long"] = pd.to_numeric(df["geometry.coordinates"].apply(lambda x: x[0]), errors="coerce")
+df["Lat"]  = pd.to_numeric(df["geometry.coordinates"].apply(lambda x: x[1]), errors="coerce")
+
+# Parse time (ms since epoch)
+df["date_str"] = pd.to_datetime(df["properties.time"], unit="ms")
+df["magnitude"] = pd.to_numeric(df["properties.mag"], errors="coerce")
+
+# Keep valid rows only
+df = df.dropna(subset=["Lat", "Long", "magnitude"]).reset_index(drop=True)
+
+TOTAL = len(df)
+min_mag = float(df["magnitude"].min())
+max_mag = float(df["magnitude"].max())
 
 # -------------------------
 # Session state
 # -------------------------
-# if "step" not in st.session_state:
-#     st.session_state.step = 1           # current reveal boundary (1..MAX_STEP)
 if "playing" not in st.session_state:
     st.session_state.playing = False
-# if "loop" not in st.session_state:
-#     st.session_state.loop = True
+if "reveal" not in st.session_state:
+    st.session_state.reveal = 1          # how many rows are currently revealed
 
 # -------------------------
 # Controls
 # -------------------------
 with st.sidebar:
     st.markdown("### Animation Controls")
-    colA, colB = st.columns([1, 1])
-    if colA.button("▶ Play"):
+    c1, c2, c3 = st.columns([1,1,1])
+    if c1.button("▶ Play"):
         st.session_state.playing = True
-    # if colB.button("⏸ Pause"):
-    #     st.session_state.playing = False
-    if colB.button("⟲ Reset"):
-        st.session_state.step = 1
+    if c2.button("⏸ Pause"):
+        st.session_state.playing = False
+    if c3.button("⟲ Reset"):
+        st.session_state.reveal = 1
         st.session_state.playing = False
 
-    # This slider sets how many points get added per tick
-    # batch_size = st.slider("Points per tick", 10, 100, 20, 10)
-
-    # Loop when we reach the end?
-    # st.session_state.loop = st.toggle("Loop when finished", value=True)
+    batch_size = st.slider("Points per tick", min_value=10, max_value=200, value=100, step=10)
+    loop = st.toggle("Loop when finished", value=True)
 
 st.write("Currently Playing:", st.session_state.playing)
-# st.write("Current Batch Size:", batch_size)
-st.write("Min Mag:", df["properties.mag"].min())
-st.write("Max Mag:", df["properties.mag"].max())
-
+st.write(f"Visible rows: {st.session_state.reveal} / {TOTAL}")
+st.write(f"Min Mag: {min_mag} — Max Mag: {max_mag}")
 
 # -------------------------
-# Map layers
+# Chart builder
 # -------------------------
 countries = alt.topo_feature(data.world_110m.url, "countries")
 
-base = (
-    alt.Chart(countries)
-    .mark_geoshape(fill="lightgray", stroke="white")
-    .project(type="naturalEarth1")
-    .properties(width=900, height=480)
-)
-points = (
-    alt.Chart(df[0:1])
-    .mark_circle()
-    .encode(
-        longitude="Long:Q",
-        latitude="Lat:Q",
-        color=alt.Color(
-            "magnitude:Q",
-            scale=alt.Scale(scheme="inferno", domain=[df["magnitude"].min(), df["magnitude"].max()]),
-            legend=alt.Legend(title="Magnitude")
-        ),
-        size=alt.Size(
-            "magnitude:Q",
-            scale=alt.Scale(range=[10, 400]),  # bigger points for larger magnitude
-            legend=None
-        ),
-        tooltip=[
-            "properties.place:N",
-            "magnitude:Q",
-            "date_str:T",
-            "properties.type:N"
-            ],
-        )
+def build_chart(df_visible: pd.DataFrame) -> alt.Chart:
+    base = (
+        alt.Chart(countries)
+        .mark_geoshape(fill="lightgray", stroke="white")
+        .properties(width=900, height=480)
     )
-chart = (base + points).properties(title="Adding Points Over Time (Play/Pause/Reset)")
-st.altair_chart(chart, use_container_width=True)
 
-n = 36
-start_ = 0
-end_ = 50
-track_ = 0
-# df_concat = pd.DataFrame()
-while track_< n and st.session_state.playing==True:
-    # df_concat = pd.concat([df_concat, df[start_:end_]])
     points = (
-    alt.Chart(df[start_:end_])
-    .mark_circle()
-    .encode(
-        longitude="Long:Q",
-        latitude="Lat:Q",
-        color=alt.Color(
-            "magnitude:Q",
-            scale=alt.Scale(scheme="inferno", domain=[df["magnitude"].min(), df["magnitude"].max()]),
-            legend=alt.Legend(title="Magnitude")
-        ),
-        size=alt.Size(
-            "magnitude:Q",
-            scale=alt.Scale(range=[10, 400]),  # bigger points for larger magnitude
-            legend=None
-        ),
-        tooltip=[
-            "properties.place:N",
-            "magnitude:Q",
-            "date_str:T",
-            "properties.type:N"
+        alt.Chart(df_visible)
+        .mark_circle(opacity=0.95, stroke="black", strokeWidth=0.3)
+        .encode(
+            longitude="Long:Q",
+            latitude="Lat:Q",
+            color=alt.Color(
+                "magnitude:Q",
+                scale=alt.Scale(scheme="inferno", domain=[min_mag, max_mag], clamp=True),
+                legend=alt.Legend(title="Magnitude"),
+            ),
+            size=alt.Size("magnitude:Q", scale=alt.Scale(range=[40, 700]), legend=None),
+            tooltip=[
+                "properties.place:N",
+                "magnitude:Q",
+                "date_str:T",
+                "properties.type:N",
             ],
         )
     )
-    track_ += 1
-    # print(f"{track_} - {start_} - {end_}")
-    # start_ += 50
-    end_ += 50
-    chart = (base + points).properties(title="Adding Points Over Time (Play/Pause/Reset)")
-    # st.altair_chart(chart, use_container_width=True)
-    if st.session_state.playing:
-        time.sleep(0.5)  # adjust tick speed
-        # Use modern API; fall back if running on older Streamlit
-        try:
-            st.rerun()
-        except AttributeError:
-            st.experimental_rerun()
-    
-# Reveal only up to the current step
-# visible = df[df["step"] <= st.session_state.step]
 
-# points = (
-#     alt.Chart(visible)
-#     .mark_circle(size=1000)
-#     .encode(
-#         longitude="Long:Q",
-#         latitude="Lat:Q",
-#         color=alt.Color(
-#             "properties.mag:O",
-#             scale=alt.Scale(scheme="inferno", domain=[df["properties.mag"].min(), df["properties.mag"].max()]),
-#             legend=alt.Legend(title="Magnitude")),
-#         tooltip=["properties.mag:Q", "step:Q", "properties.type:N", "date_str:T"],
-#     )
-# )
+    return alt.layer(base, points).project(type="naturalEarth1").properties(
+        title="Earthquakes (revealed progressively)"
+    )
 
+# Single placeholder we will update each tick
+chart_ph = st.empty()
 
-
-
-
+# Render current state once
+current = df.iloc[: st.session_state.reveal]
+chart_ph.altair_chart(build_chart(current), use_container_width=True)
 
 # -------------------------
-# Animation loop: add `batch_size` points each tick while playing
+# Animation loop (updates the SAME placeholder)
 # -------------------------
-# def advance_steps(batch: int):
-#     st.session_state.step = min(st.session_state.step + int(batch), MAX_STEP)
-#     if st.session_state.step >= MAX_STEP:
-#         if st.session_state.loop:
-#             st.session_state.step = 1
-#         else:
-#             st.session_state.playing = False
+if st.session_state.playing:
+    # add batch, clamp
+    st.session_state.reveal = min(st.session_state.reveal + batch_size, TOTAL)
 
-# if st.session_state.playing:
-#     time.sleep(0.5)  # adjust tick speed
-#     advance_steps(batch_size)
-#     # Use modern API; fall back if running on older Streamlit
-#     try:
-#         st.rerun()
-#     except AttributeError:
-#         st.experimental_rerun()
+    # if we reached the end, loop or stop
+    if st.session_state.reveal >= TOTAL:
+        if loop:
+            st.session_state.reveal = 1
+        else:
+            st.session_state.playing = False
+
+    # small delay for pacing
+    time.sleep(0.4)
+
+    # re-run to refresh UI and re-render into the SAME placeholder
+    try:
+        st.rerun()
+    except AttributeError:
+        st.experimental_rerun()
