@@ -53,7 +53,14 @@ df["date_str"] = pd.to_datetime(df["properties.time"])
 MAX_STEP = int(len(df)+1)
 df['step'] = np.arange(1,MAX_STEP)
 
-
+# Session state
+# -------------------------
+# if "step" not in st.session_state:
+#     st.session_state.step = 1
+# if "playing" not in st.session_state:
+#     st.session_state.playing = False
+# if "loop" not in st.session_state:
+#     st.session_state.loop = True
 
 
 st.markdown()
@@ -72,7 +79,7 @@ with st.sidebar:
     speed = st.slider("Speed (points per second)", 0.25, 5.0, 1.0, 0.25)
     st.session_state.loop = st.toggle("Loop when finished", value=True)
 
-st.markdown("st.session_state.playing")
+st.write("st.session_state.playing")
 
 countries = alt.topo_feature(data.world_110m.url, 'countries')
 base = alt.Chart(countries).mark_geoshape(
