@@ -28,6 +28,7 @@ df["Lat"] = lat_
 df["Long"] = long_
 # properties.time is ms since epoch → parse correctly
 df["date_str"] = pd.to_datetime(df["properties.time"], unit="ms")
+df['magnitude'] = df['properties.mag'].astype(float)
 
 # Build a reveal step for each row
 MAX_STEP = len(df)  # total rows
@@ -84,44 +85,44 @@ base = (
 # Reveal only up to the current step
 visible = df[df["step"] <= st.session_state.step]
 
-points = (
-    alt.Chart(visible)
-    .mark_circle(size=1000)
-    .encode(
-        longitude="Long:Q",
-        latitude="Lat:Q",
-        color=alt.Color(
-            "properties.mag:O",
-            scale=alt.Scale(scheme="inferno", domain=[df["properties.mag"].min(), df["properties.mag"].max()]),
-            legend=alt.Legend(title="Magnitude")),
-        tooltip=["properties.mag:Q", "step:Q", "properties.type:N", "date_str:T"],
-    )
-)
-
 # points = (
 #     alt.Chart(visible)
-#     .mark_circle()
+#     .mark_circle(size=1000)
 #     .encode(
 #         longitude="Long:Q",
 #         latitude="Lat:Q",
 #         color=alt.Color(
-#             "properties.mag:Q",
+#             "properties.mag:O",
 #             scale=alt.Scale(scheme="inferno", domain=[df["properties.mag"].min(), df["properties.mag"].max()]),
-#             legend=alt.Legend(title="Magnitude")
-#         ),
-#         size=alt.Size(
-#             "properties.mag:Q",
-#             scale=alt.Scale(range=[10, 400]),  # bigger points for larger magnitude
-#             legend=None
-#         ),
-#         tooltip=[
-#             "properties.place:N",
-#             "properties.mag:Q",
-#             "date_str:T",
-#             "properties.type:N"
-#         ],
+#             legend=alt.Legend(title="Magnitude")),
+#         tooltip=["properties.mag:Q", "step:Q", "properties.type:N", "date_str:T"],
 #     )
 # )
+
+points = (
+    alt.Chart(visible)
+    .mark_circle()
+    .encode(
+        longitude="Long:Q",
+        latitude="Lat:Q",
+        color=alt.Color(
+            "magnitude:Q",
+            scale=alt.Scale(scheme="inferno", domain=[df["magnitude"].min(), df["magnitude"].max()]),
+            legend=alt.Legend(title="Magnitude")
+        ),
+        size=alt.Size(
+            "magnitude:Q",
+            scale=alt.Scale(range=[10, 400]),  # bigger points for larger magnitude
+            legend=None
+        ),
+        tooltip=[
+            "properties.place:N",
+            "magnitude:Q",
+            "date_str:T",
+            "properties.type:N"
+        ],
+    )
+)
 
 
 chart = (base + points).properties(title="Adding Points Over Time (Play/Pause/Reset)")
