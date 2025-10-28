@@ -56,12 +56,14 @@ df['step'] = np.arange(1,MAX_STEP)
 
 # Session state
 # -------------------------
-if "step" not in st.session_state:
-    st.session_state.step = 1
-if "playing" not in st.session_state:
-    st.session_state.playing = False
-if "loop" not in st.session_state:
-    st.session_state.loop = True
+# if "step" not in st.session_state:
+#     st.session_state.step = 1
+# if "playing" not in st.session_state:
+#     st.session_state.playing = False
+# if "loop" not in st.session_state:
+#     st.session_state.loop = True
+
+st.markdown()
 
 with st.sidebar:
     st.markdown("### Animation Controls")
@@ -76,6 +78,8 @@ with st.sidebar:
 
     speed = st.slider("Speed (points per second)", 0.25, 5.0, 1.0, 0.25)
     st.session_state.loop = st.toggle("Loop when finished", value=True)
+
+st.markdown(st.session_state.playing)
 
 countries = alt.topo_feature(data.world_110m.url, 'countries')
 base = alt.Chart(countries).mark_geoshape(
@@ -104,19 +108,19 @@ st.altair_chart(chart, use_container_width=True)
 
 # Animation loop (runs one tick, then re-runs the script)
 # -------------------------
-def advance_one_step():
-    if st.session_state.step < MAX_STEP:
-        st.session_state.step += 1
-    else:
-        if st.session_state.loop:
-            st.session_state.step = 1
-        else:
-            st.session_state.playing = False
+# def advance_one_step():
+#     if st.session_state.step < MAX_STEP:
+#         st.session_state.step += 1
+#     else:
+#         if st.session_state.loop:
+#             st.session_state.step = 1
+#         else:
+#             st.session_state.playing = False
 
-# If playing, wait according to speed, then move one step and rerun
-if st.session_state.playing:
-    # convert points per second -> seconds per frame
-    delay = 1.0 / float(speed)
-    time.sleep(delay)
-    advance_one_step()
-    st.experimental_rerun()
+# # If playing, wait according to speed, then move one step and rerun
+# if st.session_state.playing:
+#     # convert points per second -> seconds per frame
+#     delay = 1.0 / float(speed)
+#     time.sleep(delay)
+#     advance_one_step()
+#     st.experimental_rerun()
