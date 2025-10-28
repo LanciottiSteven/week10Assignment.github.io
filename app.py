@@ -85,6 +85,19 @@ base = alt.Chart(countries).mark_geoshape(
 ).properties(
     width=900,
     height=480
+).interactive()
+
+visible = df[df["step"] <= st.session_state.step]
+
+points = alt.Chart(visible).mark_circle(size=160).encode(
+    longitude="Long:Q",
+    latitude="Lat:Q",
+    tooltip=["properties.mag:Q", "step:Q", "properties.type:N"]
 )
 
-st.altair_chart(base)
+chart = (base + points + labels).properties(
+    title="Adding Points Over Time (Play/Pause/Reset)"
+)
+
+st.altair_chart(chart, use_container_width=True)
+
