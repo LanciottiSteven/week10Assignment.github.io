@@ -86,11 +86,11 @@ n = 36
 start_ = 0
 end_ = 50
 track_ = 0
-df_concat = pd.DataFrame()
+# df_concat = pd.DataFrame()
 while track_< n and st.session_state.playing==True:
-    df_concat = pd.concat([df_concat, df[start_:end_]])
+    # df_concat = pd.concat([df_concat, df[start_:end_]])
     points = (
-    alt.Chart(df_concat)
+    alt.Chart(df[start_:end_])
     .mark_circle()
     .encode(
         longitude="Long:Q",
@@ -113,11 +113,13 @@ while track_< n and st.session_state.playing==True:
             ],
         )
     )
+    track_ += 1
+    # print(f"{track_} - {start_} - {end_}")
+    # start_ += 50
+    end_ += 50
     chart = (base + points).properties(title="Adding Points Over Time (Play/Pause/Reset)")
     st.altair_chart(chart, use_container_width=True)
-    track_ += 1
-    start_ += 50
-    end_ += 50
+    
 # Reveal only up to the current step
 # visible = df[df["step"] <= st.session_state.step]
 
