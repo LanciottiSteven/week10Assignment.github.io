@@ -79,7 +79,9 @@ with st.sidebar:
     speed = st.slider("Speed (points per second)", 0.25, 5.0, 1.0, 0.25)
     st.session_state.loop = st.toggle("Loop when finished", value=True)
 
-st.write("Current State:", st.session_state.playing)
+st.write("Currently Playing:", st.session_state.playing)
+st.write("Current Speed:", st.session_state.loop)
+
 
 countries = alt.topo_feature(data.world_110m.url, 'countries')
 base = alt.Chart(countries).mark_geoshape(
