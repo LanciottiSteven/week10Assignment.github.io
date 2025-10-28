@@ -81,7 +81,33 @@ base = (
     .project(type="naturalEarth1")
     .properties(width=900, height=480)
 )
-st.altair_chart(base, use_container_width=True)
+points = (
+    alt.Chart(df[0:1])
+    .mark_circle()
+    .encode(
+        longitude="Long:Q",
+        latitude="Lat:Q",
+        color=alt.Color(
+            "magnitude:Q",
+            scale=alt.Scale(scheme="inferno", domain=[df["magnitude"].min(), df["magnitude"].max()]),
+            legend=alt.Legend(title="Magnitude")
+        ),
+        size=alt.Size(
+            "magnitude:Q",
+            scale=alt.Scale(range=[10, 400]),  # bigger points for larger magnitude
+            legend=None
+        ),
+        tooltip=[
+            "properties.place:N",
+            "magnitude:Q",
+            "date_str:T",
+            "properties.type:N"
+            ],
+        )
+    )
+chart = (base + points).properties(title="Adding Points Over Time (Play/Pause/Reset)")
+st.altair_chart(chart, use_container_width=True)
+
 n = 36
 start_ = 0
 end_ = 50
