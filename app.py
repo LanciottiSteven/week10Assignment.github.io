@@ -64,10 +64,10 @@ with st.sidebar:
     # Loop when we reach the end?
     st.session_state.loop = st.toggle("Loop when finished", value=True)
 
-st.write("Currently Playing:", st.session_state.playing)
-st.write("Current Batch Size:", batch_size)
-st.write("Min Mag:", df["properties.mag"].min())
-st.write("Max Mag:", df["properties.mag"].max())
+# st.write("Currently Playing:", st.session_state.playing)
+# st.write("Current Batch Size:", batch_size)
+# st.write("Min Mag:", df["properties.mag"].min())
+# st.write("Max Mag:", df["properties.mag"].max())
 
 
 # -------------------------
