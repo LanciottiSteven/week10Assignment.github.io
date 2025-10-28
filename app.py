@@ -47,22 +47,22 @@ if "loop" not in st.session_state:
 # -------------------------
 # Controls
 # -------------------------
-with st.sidebar:
-    st.markdown("### Animation Controls")
-    colA, colB, colC = st.columns([1, 1, 1])
-    if colA.button("▶ Play"):
-        st.session_state.playing = True
-    if colB.button("⏸ Pause"):
-        st.session_state.playing = False
-    if colC.button("⟲ Reset"):
-        st.session_state.step = 1
-        st.session_state.playing = False
+# with st.sidebar:
+st.markdown("### Animation Controls")
+colA, colB, colC = st.columns([1, 1, 1])
+if colA.button("▶ Play"):
+    st.session_state.playing = True
+if colB.button("⏸ Pause"):
+    st.session_state.playing = False
+if colC.button("⟲ Reset"):
+    st.session_state.step = 1
+    st.session_state.playing = False
 
-    # This slider sets how many points get added per tick
-    batch_size = st.slider("Points per tick", 10, 100, 100, 10)
+# This slider sets how many points get added per tick
+batch_size = st.slider("Points per tick", 10, 100, 50, 10)
 
-    # Loop when we reach the end?
-    st.session_state.loop = st.toggle("Loop when finished", value=False)
+# Loop when we reach the end?
+st.session_state.loop = st.toggle("Loop when finished", value=False)
 
 st.write("***Press play when ready***")
 
